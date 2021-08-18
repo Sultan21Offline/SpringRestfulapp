@@ -4,6 +4,10 @@ import com.example.sultan.exception.NotFoundException;
 import com.example.sultan.model.User;
 
 import com.example.sultan.repository.UserRepository;
+import com.example.sultan.service.UserService;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -11,56 +15,34 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/user")
+@RequiredArgsConstructor
 public class UserController {
     private final UserRepository userRepository;
+    private final UserService userService;
 
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    @GetMapping("/users")
+    public ResponseEntity<Iterable<User>>retrieveAllUsers(){
+        return ResponseEntity.ok().body(userService.retrieveAllUsers());
+    }
+    @GetMapping("/users/{id}")
+    public ResponseEntity<Optional> getUser(@PathVariable String id){
+        return ResponseEntity.ok().body(userService.getUser(id));
+    }
+    @PostMapping("/adduser")
+    public ResponseEntity<User>addNew(@RequestBody String name){
+        return ResponseEntity.ok().body(userService.addNew(name));
+    }
+    @PutMapping("/update/{id}")
+    public ResponseEntity<User>updateUser(@PathVariable(value = "id") String id,@RequestBody String name){
+        return ResponseEntity.ok().body(userService.updateUser(id,name));
+    }
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void>deleteUser(@RequestBody String id){
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
-    public Iterable<User> retrieveAllUsers(){
-        Iterable<User> userDB = userRepository.findAll();
-        return userDB;
-    }
-    @GetMapping("{id}")
-    public Optional getUser(@PathVariable String id){
-        Optional<User> userDB = userRepository.findById(UUID.fromString(id));
-        if(userDB.isPresent()){
-            return userDB;
-        }else{
-            throw new NotFoundException("Error! User doesn't exist");
 
-        }
-    }
-    @PostMapping("create")
-    public User addNew(@RequestBody String name){
-        User user = new User(name);
-        userRepository.save(user);
-        return user;
     }
 
-    @PutMapping("update/{id}")
-    public User updateUser(@PathVariable(value = "id") String id,@RequestBody String name){
-        Optional<User> userOptional = userRepository.findById(UUID.fromString(id));
-        if(userOptional.isPresent()) {
-            User user = userOptional.get();
-            user.setName(name);
-            userRepository.save(user);
-            return user;
-        }else{
-            throw new NotFoundException("Error not found user");
-        }
-    }
 
-    @DeleteMapping("delete")
-    public void deleteUser(@RequestBody String id){
-        Optional<User> userOptional = userRepository.findById(UUID.fromString(id));
-        if(userOptional.isPresent()){
-            userRepository.delete(userOptional.get());
-        }else{
-            throw new NotFoundException("Error");
-        }
-    }
-
-}
