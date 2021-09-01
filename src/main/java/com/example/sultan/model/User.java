@@ -1,19 +1,33 @@
 package com.example.sultan.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.UUID;
 
 @Entity
+@Data
 @Table(name = "users")
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-    private String name;
+    @Column(name = "username")
+    @NotBlank
+    private String username;
+    private String email;
+    private String password;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Collection<Role> roles= new ArrayList<>();
+
 
     public UUID getId(){
         return id;
@@ -21,17 +35,18 @@ public class User {
     public void setId(UUID id){
         this.id=id;
     }
-    public String getName(){
-        return name;
+    public String getUsername(){
+        return username;
     }
-    public void setName(String name){
-        this.name=name;
+    public void setUsername(String username){
+        this.username=username;
     }
 
-    public User(){
-
+    public String getEmail() {
+        return email;
     }
-    public User(String name){
-        this.name = name;
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
